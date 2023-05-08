@@ -106,8 +106,19 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 
-/* global AFRAME */
-var styleParser = AFRAME.utils.styleParser;
+var styleParser = {
+  parseKebabCase: function parseKebabCase(value) {
+    var kebabCaseProps = {};
+    var camelCaseProps = AFRAME.utils.styleParser.parse(value);
+
+    // Convert camelCase keys from styleParser to kebab-case.
+    for (var key in camelCaseProps) {
+      var hyphenatedKey = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+      kebabCaseProps[hyphenatedKey] = camelCaseProps[key];
+    }
+    return kebabCaseProps;
+  }
+};
 
 if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
@@ -117,7 +128,7 @@ AFRAME.registerComponent('event-set', {
   schema: {
     default: '',
     parse: function parse(value) {
-      return styleParser.parse(value);
+      return styleParser.parseKebabCase(value);
     }
   },
 
@@ -132,10 +143,6 @@ AFRAME.registerComponent('event-set', {
     this.removeEventListener();
     this.updateEventListener();
     this.addEventListener();
-  },
-
-  remove: function remove() {
-    this.removeEventListener();
   },
 
   pause: function pause() {
