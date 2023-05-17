@@ -1,16 +1,16 @@
-var templateString = require('es6-template-strings');
+var templateString = require("es6-template-strings");
 
 var debug = AFRAME.utils.debug;
 var extend = AFRAME.utils.extend;
-var templateCache = {};  // Template cache.
-var error = debug('template-component:error');
-var log = debug('template-component:info');
+var templateCache = {}; // Template cache.
+var error = debug("template-component:error");
+var log = debug("template-component:info");
 
-var HANDLEBARS = 'handlebars';
-var JADE = 'jade';
-var MUSTACHE = 'mustache';
-var NUNJUCKS = 'nunjucks';
-var HTML = 'html';
+var HANDLEBARS = "handlebars";
+var JADE = "jade";
+var MUSTACHE = "mustache";
+var NUNJUCKS = "nunjucks";
+var HTML = "html";
 
 var LIB_LOADED = {};
 LIB_LOADED[HANDLEBARS] = !!window.Handlebars;
@@ -19,33 +19,33 @@ LIB_LOADED[MUSTACHE] = !!window.Mustache;
 LIB_LOADED[NUNJUCKS] = !!window.nunjucks;
 
 var LIB_SRC = {};
-LIB_SRC[HANDLEBARS] = 'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js';
-LIB_SRC[JADE] = 'https://cdnjs.cloudflare.com/ajax/libs/jade/1.11.0/jade.min.js';
-LIB_SRC[MUSTACHE] = 'https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js';
-LIB_SRC[NUNJUCKS] = 'https://cdnjs.cloudflare.com/ajax/libs/nunjucks/2.3.0/nunjucks.min.js';
+LIB_SRC[HANDLEBARS] = "https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js";
+LIB_SRC[JADE] = "https://cdnjs.cloudflare.com/ajax/libs/jade/1.11.0/jade.min.js";
+LIB_SRC[MUSTACHE] = "https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js";
+LIB_SRC[NUNJUCKS] = "https://cdnjs.cloudflare.com/ajax/libs/nunjucks/2.3.0/nunjucks.min.js";
 
-AFRAME.registerComponent('template', {
+AFRAME.registerComponent("template", {
   schema: {
     insert: {
       // insertAdjacentHTML.
-      default: 'beforeend'
+      default: "beforeend",
     },
     type: {
-      default: ''
+      default: "",
     },
     src: {
       // Selector or URL.
-      default: ''
+      default: "",
     },
     data: {
-      default: ''
-    }
+      default: "",
+    },
   },
 
   update: function (oldData) {
     var data = this.data;
     var el = this.el;
-    var fetcher = data.src[0] === '#' ? fetchTemplateFromScriptTag : fetchTemplateFromXHR;
+    var fetcher = data.src[0] === "#" ? fetchTemplateFromScriptTag : fetchTemplateFromXHR;
     var templateCacheItem = templateCache[data.src];
 
     // Replace children if swapping templates.
@@ -68,36 +68,35 @@ AFRAME.registerComponent('template', {
     var data = this.data;
     var templateData = {};
 
-    Object.keys(el.dataset).forEach(function convertToData (key) {
+    Object.keys(el.dataset).forEach(function convertToData(key) {
       templateData[key] = el.dataset[key];
     });
     if (data.data) {
-      templateData = extend(templateData, el.getAttribute(data.data));
+      templateData = extend(templateData, typeof data.data === "object" ? data.data : el.getAttribute(data.data));
     }
 
-    var renderedTemplate = renderTemplate(templateCacheItem.template, templateCacheItem.type,
-                                          templateData);
+    var renderedTemplate = renderTemplate(templateCacheItem.template, templateCacheItem.type, templateData);
     el.insertAdjacentHTML(data.insert, renderedTemplate);
-    el.emit('templaterendered');
-  }
+    el.emit("templaterendered");
+  },
 });
 
 /**
  * Helper to compile template, lazy-loading the template engine if needed.
  */
-function compileTemplate (src, type, templateStr) {
+function compileTemplate(src, type, templateStr) {
   return new Promise(function (resolve) {
     injectTemplateLib(type).then(function () {
       templateCache[src] = {
         template: getCompiler(type)(templateStr.trim()),
-        type: type
+        type: type,
       };
       resolve(templateCache[src]);
     });
   });
 }
 
-function renderTemplate (template, type, context) {
+function renderTemplate(template, type, context) {
   switch (type) {
     case HANDLEBARS: {
       return template(context);
@@ -121,29 +120,29 @@ function renderTemplate (template, type, context) {
 /**
  * Cache and compile templates.
  */
-function fetchTemplateFromScriptTag (src, type) {
+function fetchTemplateFromScriptTag(src, type) {
   var compiler;
   var scriptEl = document.querySelector(src);
-  var scriptType = scriptEl.getAttribute('type');
+  var scriptType = scriptEl.getAttribute("type");
   var templateStr = scriptEl.innerHTML;
 
   // Try to infer template type from <script type> if type not specified.
   if (!type) {
     if (!scriptType) {
-      throw new Error('Must provide `type` attribute for <script> templates (e.g., handlebars, jade, nunjucks, html)');
+      throw new Error("Must provide `type` attribute for <script> templates (e.g., handlebars, jade, nunjucks, html)");
     }
-    if (scriptType.indexOf('handlebars') !== -1) {
+    if (scriptType.indexOf("handlebars") !== -1) {
       type = HANDLEBARS;
-    } else if (scriptType.indexOf('jade') !== -1) {
-      type = JADE
-    } else if (scriptType.indexOf('mustache') !== -1) {
+    } else if (scriptType.indexOf("jade") !== -1) {
+      type = JADE;
+    } else if (scriptType.indexOf("mustache") !== -1) {
       type = MUSTACHE;
-    } else if (scriptType.indexOf('nunjucks') !== -1) {
-      type = NUNJUCKS
-    } else if (scriptType.indexOf('html') !== -1) {
+    } else if (scriptType.indexOf("nunjucks") !== -1) {
+      type = NUNJUCKS;
+    } else if (scriptType.indexOf("html") !== -1) {
       type = HTML;
     } else {
-      error('Template type could not be inferred from the script tag. Please add a type.');
+      error("Template type could not be inferred from the script tag. Please add a type.");
       return;
     }
   }
@@ -155,17 +154,17 @@ function fetchTemplateFromScriptTag (src, type) {
   });
 }
 
-function fetchTemplateFromXHR (src, type) {
+function fetchTemplateFromXHR(src, type) {
   return new Promise(function (resolve) {
     var request;
     request = new XMLHttpRequest();
-    request.addEventListener('load', function () {
+    request.addEventListener("load", function () {
       // Template fetched. Use template.
       compileTemplate(src, type, request.response).then(function (template) {
         resolve(template, type);
       });
     });
-    request.open('GET', src);
+    request.open("GET", src);
     request.send();
   });
 }
@@ -173,7 +172,7 @@ function fetchTemplateFromXHR (src, type) {
 /**
  * Get compiler given type.
  */
-function getCompiler (type) {
+function getCompiler(type) {
   switch (type) {
     case HANDLEBARS: {
       return compileHandlebarsTemplate;
@@ -189,45 +188,50 @@ function getCompiler (type) {
     }
     default: {
       // If type not specified, assume raw HTML and no templating needed.
-      return function (str) { return str; };
+      return function (str) {
+        return str;
+      };
     }
   }
 }
 
-function compileHandlebarsTemplate (templateStr) {
+function compileHandlebarsTemplate(templateStr) {
   return Handlebars.compile(templateStr);
 }
 
-function compileJadeTemplate (templateStr) {
+function compileJadeTemplate(templateStr) {
   return jade.compile(templateStr);
 }
 
-function compileMustacheTemplate (templateStr) {
+function compileMustacheTemplate(templateStr) {
   Mustache.parse(templateStr);
   return templateStr;
 }
 
-function compileNunjucksTemplate (templateStr) {
+function compileNunjucksTemplate(templateStr) {
   return nunjucks.compile(templateStr);
 }
 
-function injectTemplateLib (type) {
+function injectTemplateLib(type) {
   return new Promise(function (resolve) {
     // No lib injection required.
-    if (!type || type === 'html') { return resolve(); }
+    if (!type || type === "html") {
+      return resolve();
+    }
 
     var scriptEl = LIB_LOADED[type];
 
     // Engine loaded.
-    if (LIB_LOADED[type] === true) { return resolve(); }
+    if (LIB_LOADED[type] === true) {
+      return resolve();
+    }
 
     // Start lazy-loading.
     if (!scriptEl) {
-      scriptEl = document.createElement('script');
+      scriptEl = document.createElement("script");
       LIB_LOADED[type] = scriptEl;
-      scriptEl.setAttribute('src', LIB_SRC[type]);
-      log('Lazy-loading %s engine. Please add <script src="%s"> to your page.',
-          type, LIB_SRC[type]);
+      scriptEl.setAttribute("src", LIB_SRC[type]);
+      log('Lazy-loading %s engine. Please add <script src="%s"> to your page.', type, LIB_SRC[type]);
       document.body.appendChild(scriptEl);
     }
 
@@ -239,20 +243,20 @@ function injectTemplateLib (type) {
       resolve();
     };
   });
-};
+}
 
-AFRAME.registerComponent('template-set', {
+AFRAME.registerComponent("template-set", {
   schema: {
-    on: {type: 'string'},
-    src: {type: 'string'},
-    data: {type: 'string'}
+    on: { type: "string" },
+    src: { type: "string" },
+    data: { type: "string" },
   },
 
   init: function () {
     var data = this.data;
     var el = this.el;
     el.addEventListener(data.on, function () {
-      el.setAttribute('template', {src: data.src, data: data.data});
+      el.setAttribute("template", { src: data.src, data: data.data });
     });
-  }
+  },
 });
