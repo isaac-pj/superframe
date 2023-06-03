@@ -18,7 +18,6 @@ AFRAME.registerComponent('layout', {
     reverse: {default: false},
     type: {default: 'line', oneOf: ['box', 'circle', 'cube', 'dodecahedron', 'line',
                                     'pyramid']},
-    fill: {default: true, if: {type: ['circle']}},
     align: {default: 'end', oneOf: ['start', 'center', 'end']}
   },
 
