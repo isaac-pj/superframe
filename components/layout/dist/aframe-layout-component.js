@@ -53,7 +53,7 @@
 	 */
 	AFRAME.registerComponent('layout', {
 	  schema: {
-	    angle: {type: 'number', default: NaN, min: 0, max: 360, if: {type: ['circle']}},
+	    angle: {type: 'number', default: 0, min: 0, max: 360, if: {type: ['circle']}},
 	    columns: {default: 1, min: 0, if: {type: ['box']}},
 	    margin: {default: 1, min: 0, if: {type: ['box', 'line']}},
 	    marginColumn: {default: 1, min: 0, if: {type: ['box']}},
@@ -64,7 +64,8 @@
 	    reverse: {default: false},
 	    type: {default: 'line', oneOf: ['box', 'circle', 'cube', 'dodecahedron', 'line',
 	                                    'pyramid']},
-	    align: {default: 'end', oneOf: ['start', 'center', 'end']}
+	    align: {default: 'end', oneOf: ['start', 'center', 'end']},
+	    fill: {type: 'boolean', default: true, if: {type: ['circle']}}
 	  },
 
 	  /**
@@ -229,7 +230,7 @@
 	  for (i = 0; i < numChildren; i++) {
 	    rad;
 
-	    if (isNaN(data.angle)) {
+	    if (isNaN(data.angle) || (data.angle === 0 && data.fill)) {
 	      rad = i * (2 * Math.PI) / numChildren;
 	    } else {
 	      rad = i * data.angle * 0.01745329252;  // Angle to radian.
